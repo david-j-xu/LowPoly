@@ -63,7 +63,7 @@ public class Image {
 	            }
 	        }
 	        
-	        File outputFile = new File(outputName + ".png");
+	        File outputFile = new File("./output/" + outputName + ".png");
 	        ImageIO.write(output, "png", outputFile);
 	    } catch (IOException e) {
 	        e.printStackTrace();
