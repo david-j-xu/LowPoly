@@ -41,7 +41,7 @@ public class Image {
 	public int[][][] getMatrix() {
 		return matrix;
 	}
-	
+
 	public int getWidth() {
 	    return width;
 	}
@@ -70,6 +70,10 @@ public class Image {
 	    }
 	    
 	}
+	
+	public boolean inBounds(int x, int y) {
+	    return x >= 0 && x < width && y >= 0 && y < height;
+	}
 
 	@Override
 	public String toString() {
@@ -85,87 +89,26 @@ public class Image {
 		return output.toString();
 	}
 	
-	public Image convolve(int[][] kernel) {
-	    if (kernel.length <= 0 || 
-	            kernel.length % 2 == 0 || 
-	            kernel.length != kernel[0].length) {
-	        throw new IllegalArgumentException("Invalid kernel size");
-	    }
-	    
-	    int kernelSize = (int) Math.pow(kernel.length, 2); 
-	    int half = kernel.length / 2;
-	    
-	    Image output = new Image(width, height);
+	public Image blackAndWhite() {
+	   Image output = new Image(width, height);
 	    
 	    for (int i = 0; i < width; i++) {
 	        for (int j = 0 ; j < height; j++) {
-	            int convolvedR = 0;
-	            int convolvedG = 0;
-	            int convolvedB = 0;
+	            int avg = (matrix[0][i][j] + matrix[1][i][j] + matrix[2][i][j]) / 3;
 	            
-	            // (i,j) center
-	            for (int r = -half; r <= half; r++) {
-	                for (int c = -half; c <= half; c++) {
-	                    if (inBounds(i + r,j + c)) {
-	                        convolvedR += matrix[0][i + r][j + c] * kernel[r + half][c + half];
-	                        convolvedG += matrix[1][i + r][j + c] * kernel[r + half][c + half];
-	                        convolvedB += matrix[2][i + r][j + c] * kernel[r + half][c + half];
-	                    }
-	                }
-	            }
-	            
-	            output.setRGB(i, j, bitShift(convolvedR / kernelSize, 
-	                                            convolvedG / kernelSize, 
-	                                            convolvedB / kernelSize));
+	            output.setRGB(i, j, bitShift(avg, avg, avg));
 	        }
 	    }
 	    
 	    return output;
 	}
 	
-	public Image blackAndWhite() {
-	       Image output = new Image(width, height);
-	        
-	        for (int i = 0; i < width; i++) {
-	            for (int j = 0 ; j < height; j++) {
-	                int avg = (matrix[0][i][j] + matrix[1][i][j] + matrix[2][i][j]) / 3;
-	                
-	                output.setRGB(i, j, bitShift(avg, avg, avg));
-	            }
-	        }
-	        
-	        return output;
-	}
-	
-	private static int bitShift(int r, int g, int b) {
+	public static int bitShift(int r, int g, int b) {
 	    return (r << 16) + (g << 8) + b;
-	}
-	
-	private boolean inBounds(int x, int y) {
-	    return x >= 0 && x < width && y >= 0 && y < height;
-	}
-	
+	}	
 
-    public static void main(String[] args) throws IOException {
-        int[][] sobel = new int[][] {{1, 0, -1}, 
-                                    {2, 0, -2}, 
-                                    {1, 0, -1}};
-                                    
-        int[][] laplacian = new int[][] {{0, -1, 0},
-                                        {-1, 4, -1},
-                                        {0, -1, 0}};
-        int[][] gaussian = new int[][] {{1, 2, 1},
-                                        {2, 3, 2},
-                                        {1, 2, 1}};
+    public static void main(String[] args) throws IOException { 
         Image lena = new Image("lena.png");
-        lena.writeImage("original");
-        Image convolved = lena.convolve(laplacian);
-        convolved.writeImage("plsWorkOMG");
-        
-        Image bw = lena.blackAndWhite();
-        bw.writeImage("blackAndWhite");
-        bw.convolve(gaussian).convolve(laplacian).writeImage("bwConvolved");
-        
-        lena.convolve(gaussian).writeImage("gaussianBlur");
+        lena.writeImage("original"); 
     }
 }
